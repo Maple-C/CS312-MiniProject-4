@@ -1,3 +1,4 @@
+
 import express from "express";
 import pg from "pg";
 const app = express();
@@ -27,7 +28,7 @@ app.get("/", async (req, res) => {
 
         const results = await db.query('select * from blogs ORDER BY date_created desc');
 
-        res.render("index", { posts: results.rows });
+        res.json("index", { posts: results.rows });
     
     }catch (error) {
         console.error(error);
@@ -35,10 +36,26 @@ app.get("/", async (req, res) => {
 
     }
 
+app.get("/api/posts", async (req, res) => {
+
+    try {
+
+        const results = await db.query('select * from blogs ORDER BY date_created desc');
+
+        res.json(results.rows);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "There was an error while trying to get the posts. Please try again!"
+        });
+    }
+});
+
 
     // res.render("index", { posts: posts });
 
-});
+
 
 // // Bringing the homepage up 
 // app.get("/", (req, res) => {
@@ -69,13 +86,13 @@ app.get("/edit/:id", async (req, res) => {
         }
 
 
-        res.render("edit", { post }); } catch (error) {
+        res.json("edit", { post }); } catch (error) {
         
         console.error(error);
 
-        res.send("There was an error while trying to grab the post. Please try again."
-
-        );
+        res.status(500).json({
+            message: "There was an error while trying to grab the post. Please try again."
+        });
     }
 });
         
@@ -84,8 +101,9 @@ app.get("/edit/:id", async (req, res) => {
 // Hopefully acctually updates the post 
 app.post("/edit/:id", async (req, res) => {
     if (!currentUser) {
-        return res.send("You must be signed in to edit a post!"
-        );
+        return res.status(401).json({
+            message: "You must be signed in to edit a post."
+        }   );
     }   
     try {
 
@@ -94,12 +112,15 @@ app.post("/edit/:id", async (req, res) => {
         const post = check.rows[0];
 
         if (check.rows.length === 0) {
-            return res.send("Post not found.");
+            return res.status(404).json({
+                message: "Post not found."
+            }   );
         }
 
         if(post.creator_user_id !== currentUser.user_id) {
-            res.send("You are not authorized to edit this post.");
-            return;
+            return res.status(403).json({
+                message: "You are not authorized to edit this post."
+            });
         }
 
         await db.query(
@@ -115,7 +136,9 @@ app.post("/edit/:id", async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.send("There was an error while trying to update the post. Please try again.");
+        res.status(500).json({
+            message: "There was an error while trying to update the post. Please try again."
+        });
     }
 });
 
@@ -131,9 +154,9 @@ app.post("/edit/:id", async (req, res) => {
 app.post("/create-post", async (req, res) => {
 
     if(!currentUser) {
-        return res.send("You must be signed in to create a post."
-
-        );
+        return res.status(401).json({
+            message: "You must be signed in to create a post."
+        });
     }
     const { title, content} = req.body;
 
@@ -158,7 +181,9 @@ app.post("/create-post", async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.send("There was an error while creating the post. Please try again.");
+        res.status(500).json({
+            message: "There was an error while creating the post. Please try again."
+        });
     }
 
 
@@ -180,8 +205,9 @@ app.post("/create-post", async (req, res) => {
 app.post ("/delete/:id", async (req, res) => {
 
     if(!currentUser) {
-        return res.send("You must be signed in to delete a post!"
-        );
+        return res.status(401).json({
+            message: "You must be signed in to delete a post."
+        });
     }
 
     console.log("delete route hit");
@@ -193,12 +219,16 @@ app.post ("/delete/:id", async (req, res) => {
         const post = check.rows[0];
 
          if (check.rows.length === 0) {
-            return res.send("Post not found.");
+            return res.status(404).json({
+                message: "Post not found."
+            });
         }
 
 
         if(post.creator_user_id !== currentUser.user_id) {
-            res.send("You are not authorized to delete this post.");
+            return res.status(403).json({
+                message: "You are not authorized to delete this post."
+            });
             return;
         }
 
@@ -208,18 +238,20 @@ app.post ("/delete/:id", async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.send("There was an error while trying to delete the post. Please try again.");
+        res.status(500).json({
+            message: "There was an error while trying to delete the post. Please try again."
+        });
     }
 });
 
 app.get("/signin", (req, res) => {
 
-    res.render("signin");
+    res.json("signin");
 });
 
 app.get("/signup", (req, res) => {
 
-    res.render("signup");
+    res.json("signup");
 });
 
 app.get("/signout", (req, res) => {
@@ -306,4 +338,5 @@ app.post ("/signup", async (req, res) => {
 
 app.listen(port, () => { 
     console.log(`The Server is running on port ${port}!!`);
+})
 })
