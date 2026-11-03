@@ -1,6 +1,7 @@
 import SignIn from "./components/SignIn" ;
 import SignUp from "./components/SignUp" ;
 import BlogPostForm from "./components/BlogPostForm" ;
+import PostList from "./components/PostList";
 
 function App() {
   return (
@@ -14,6 +15,12 @@ function App() {
     <hr />
 
       <BlogPostForm />
+
+    <hr />
+
+    <PostList />
+    
+
     </>
   );
 }

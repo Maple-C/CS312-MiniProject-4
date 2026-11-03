@@ -5,12 +5,25 @@ function BlogPostForm() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
+
         e.preventDefault();
 
+        await fetch("http://localhost:3000/create-post", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: title,
+                content: content
+            })
+        });
 
-        console.log({ title, content });  
+        setTitle("");
+        setContent("");
     }
+    
 
 
 return (
