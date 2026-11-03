@@ -23,8 +23,8 @@ const db = new pg.Pool({
 // Middleware yay!
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-app.set("view engine", "ejs");
-app.use
+// app.set("view engine", "ejs");
+
 
 app.use(express.json());
 
@@ -36,7 +36,7 @@ app.get("/", async (req, res) => {
 
         const results = await db.query('select * from blogs ORDER BY date_created desc');
 
-        res.json("index", { posts: results.rows });
+        res.json(results.rows);
     
     }catch (error) {
         console.error(error);
@@ -97,7 +97,7 @@ app.get("/edit/:id", async (req, res) => {
         }
 
 
-        res.json("edit", { post }); } catch (error) {
+        res.json(post); } catch (error) {
         
         console.error(error);
 
@@ -143,7 +143,7 @@ app.post("/edit/:id", async (req, res) => {
             ]
         );
 
-        res.redirect("/");
+        res.json({ message: "Post updated successfully." });
 
     } catch (error) {
         console.error(error);
@@ -163,6 +163,8 @@ app.post("/edit/:id", async (req, res) => {
 
 
 app.post("/create-post", async (req, res) => {
+
+    console.log("create post route hit");
 
     if(!currentUser) {
         return res.status(401).json({
@@ -188,7 +190,7 @@ app.post("/create-post", async (req, res) => {
             [currentUser.name, currentUser.user_id, title, content]
         );
 
-        res.redirect("/");
+        res.json({ message: "Post created successfully." });
 
     } catch (error) {
         console.error(error);
@@ -214,7 +216,7 @@ app.post("/create-post", async (req, res) => {
     // res.redirect("/");
 });
 
-app.post ("/delete/:id", async (req, res) => {
+app.post ("/delete-post/:id", async (req, res) => {
 
     if(!currentUser) {
         return res.status(401).json({
@@ -246,7 +248,7 @@ app.post ("/delete/:id", async (req, res) => {
 
         await db.query('delete from blogs where blog_id = $1', [req.params.id]);
 
-        res.redirect("/");
+        res.json({ message: "Post deleted successfully." });
 
     } catch (error) {
         console.error(error);
@@ -256,20 +258,20 @@ app.post ("/delete/:id", async (req, res) => {
     }
 });
 
-app.get("/signin", (req, res) => {
+// app.get("/signin", (req, res) => {
 
-    res.json("signin");
-});
+//     res.json("signin");
+// });
 
-app.get("/signup", (req, res) => {
+// app.get("/signup", (req, res) => {
 
-    res.json("signup");
-});
+//     res.json("signup");
+// });
 
 app.get("/signout", (req, res) => {
 
     currentUser = null;
-    res.redirect("/");
+    res.json({ message: "You have been signed out." });
 });
 
 
@@ -286,20 +288,25 @@ app.post("/signin", async (req, res) => {
 
         if(result.rows.length === 0) {
 
-            res.send("This is Invalid user_id or password. Please try again.");
-
-        } else {
-
-            currentUser = result.rows[0];
-
-            res.redirect("/");
-
+            return res.json({
+                success: false,
+                message: "Invalid username or password. Please try again."
+            });
         }
 
+        currentUser = result.rows[0];
+
+        res.json({
+            success: true,
+            message: "You have been signed in."
+        });
+        
     } catch (error) {
         console.error(error);
-        res.send("There was an error while signing in. Please try again.");
-
+        res.json({
+            success: false,
+            message: "There was an error while signing in. Please try again."
+        });
     }
 
 
@@ -322,7 +329,10 @@ app.post ("/signup", async (req, res) => {
 
         if(result.rows.length > 0) {
 
-            res.send("This user_id is already taken. Please try again.");
+            return res.json({
+                success: false,
+                message: "This user_id is already taken. Please try again."
+            });
 
         } else {
 
@@ -332,14 +342,20 @@ app.post ("/signup", async (req, res) => {
 
             );
 
-            res.redirect("/signin");
+            res.json({
+                success: true,
+                message: "You have been signed up."
+            });
 
         }
 
     } catch (error  ) {
 
         console.error(error);
-        res.send("There was an error while signing up. Please try again.");
+        res.json({
+            success: false,
+            message: "There was an error while signing up. Please try again."
+        });
 
     }
 });

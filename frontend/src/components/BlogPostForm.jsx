@@ -22,6 +22,9 @@ function BlogPostForm() {
 
         setTitle("");
         setContent("");
+
+        
+        window.location.reload();
     }
     
 
