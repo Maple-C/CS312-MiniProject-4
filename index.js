@@ -35,6 +35,8 @@ app.get("/", async (req, res) => {
         res.send("There was an error while trying to grab the posts. Please try again.");
 
     }
+});
+
 
 app.get("/api/posts", async (req, res) => {
 
@@ -51,6 +53,7 @@ app.get("/api/posts", async (req, res) => {
         });
     }
 });
+
 
 
     // res.render("index", { posts: posts });
@@ -185,6 +188,7 @@ app.post("/create-post", async (req, res) => {
             message: "There was an error while creating the post. Please try again."
         });
     }
+
 
 
 
@@ -338,5 +342,4 @@ app.post ("/signup", async (req, res) => {
 
 app.listen(port, () => { 
     console.log(`The Server is running on port ${port}!!`);
-})
-})
+});
